@@ -1,0 +1,80 @@
+---
+# tasks file for kfieldho.influx
+#
+
+- name: Install Home Assistant Apt Dependencies
+  become: True
+  become_user: root
+  apt: pkg={{ item }} state=installed update_cache=yes
+  with_items:
+      - python3-pip
+      - python3-venv
+      - python3-dev
+      - build-essential
+
+- name: Create homeassistant group
+  become: True
+  become_user: root
+  group:
+    name: homeassistant
+    state: present
+
+- name: Create homeassistant user
+  become: True
+  become_user: root
+  user:
+    name: homeassistant
+    state: present
+    createhome: True
+    group: homeassistant
+    shell: /bin/bash
+    skeleton: False
+
+- name: Install Home Assistant Virtual Environment
+  become: True
+  become_user: root
+  pip:
+    name: [homeassistant, netdisco]
+    virtualenv: /home/homeassistant/hass
+    virtualenv_command: /usr/bin/pyvenv
+
+- name: Set Ownership of Home Assistant
+  become: True
+  become_user: root
+  file:
+    dest: /home/homeassistant
+    owner: homeassistant
+    group: homeassistant
+    recurse: yes
+
+- name: Install Home Assistant Systemd Configuration
+  become: True
+  become_user: root
+  copy:
+    content: |
+      [Unit]
+      Description=Home Assistant
+      After=network.target
+      [Service]
+      Type=simple
+      User=homeassistant
+      ExecStart=/home/homeassistant/hass/bin/hass
+      [Install]
+      WantedBy=multi-user.target
+    dest: /etc/systemd/system/home-assistant.service
+
+- name: Copy over configuration file
+  become: True
+  become_user: root
+  when: not (home_assistant_config_file == "")
+  copy:
+    src: "{{ home_assistant_config_file }}"
+    dest: /home/homeassistant/.homeassistant/configuration.yaml
+    mode: 0755
+    group: homeassistant
+    owner: homeassistant
+
+- name: Enable Home Assistant Service
+  become: True
+  become_user: root
+  systemd: name=home-assistant.service enabled=true state=started daemon_reload=true

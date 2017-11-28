@@ -1,0 +1,5 @@
+---
+# defaults file for kfieldho.influx
+home_assistant_destination: "/opt/home-assistant"
+# If this variable remains empty, the default configuration is left alone
+home_assistant_config_file: ""
