@@ -63,6 +63,16 @@
       WantedBy=multi-user.target
     dest: /etc/systemd/system/home-assistant.service
 
+- name: Create Configuration Directory
+  become: True
+  become_user: root
+  file:
+    path: /home/homeassistant/.homeassistant/
+    state: directory
+    mode: 0755
+    owner: homeassistant
+    group: homeassistant
+
 - name: Copy over configuration file
   become: True
   become_user: root
