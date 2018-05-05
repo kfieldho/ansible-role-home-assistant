@@ -30,11 +30,20 @@
     shell: /bin/bash
     skeleton: False
 
+- name: Install The Latest Pip
+  become: True
+  become_user: root
+  pip:
+    name: [pip]
+    executable: pip3
+    state: latest
+
 - name: Install Home Assistant Virtual Environment
   become: True
   become_user: root
   pip:
-    name: [homeassistant, netdisco]
+    name: [homeassistant, netdisco, aiohttp_cors]
+    eexecutable: pip3
     virtualenv: /home/homeassistant/hass
     virtualenv_command: /usr/bin/pyvenv
 
